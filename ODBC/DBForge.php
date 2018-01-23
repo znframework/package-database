@@ -13,26 +13,26 @@ use ZN\Database\DriverForge;
 
 class DBForge extends DriverForge
 {
-    //--------------------------------------------------------------------------------------------------------
-    // Truncate
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param string $table
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Truncate table
+     * 
+     * @param string $table
+     * 
+     * @return string
+     */
     public function truncate($table)
     { 
         return 'DELETE FROM '.$table; 
     }
     
-    //--------------------------------------------------------------------------------------------------------
-    // Rename Column
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param string $table
-    // @param mixed  $column
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Rename column
+     * 
+     * @param string $table
+     * @param string $table
+     * 
+     * @return string
+     */
     public function renameColumn($table, $column)
     { 
         return 'ALTER TABLE '.$table.' RENAME COLUMN  '.rtrim($column, ',').';';

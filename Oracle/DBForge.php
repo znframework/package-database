@@ -13,14 +13,14 @@ use ZN\Database\DriverForge;
 
 class DBForge extends DriverForge
 {
-    //--------------------------------------------------------------------------------------------------------
-    // Rename Column
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param string $table
-    // @param mixed  $column
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Rename column
+     * 
+     * @param string $table
+     * @param array  $column
+     * 
+     * @return string
+     */
     public function renameColumn($table, $column)
     { 
         return 'ALTER TABLE '.$table.' RENAME COLUMN '.key($column).' TO '.current($column).';';

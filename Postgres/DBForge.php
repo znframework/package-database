@@ -13,40 +13,40 @@ use ZN\Database\DriverForge;
 
 class DBForge extends DriverForge
 {
-    //--------------------------------------------------------------------------------------------------------
-    // Modify Column
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param string $table
-    // @param mixed  $column
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Modify Column
+     * 
+     * @param string $table
+     * @param array  $column
+     * 
+     * @return string
+     */
     public function modifyColumn($table, $column)
     {
         return 'ALTER TABLE '.$table.' ALTER COLUMN ' . $this->_syntax($column, 'TYPE') . ';';
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Rename Column
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param string $table
-    // @param mixed  $column
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Rename Column
+     * 
+     * @param string $table
+     * @param array  $column
+     * 
+     * @return string
+     */
     public function renameColumn($table, $column)
     { 
         return 'ALTER TABLE '.$table.' RENAME COLUMN ' . $this->_syntax($column, 'TO') . ';';
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Add Column
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param string $table
-    // @param mixed  $column
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Add Column
+     * 
+     * @param string $table
+     * @param array  $column
+     * 
+     * @return string
+     */
     public function addColumn($table, $columns)
     {
         return 'ALTER TABLE ' . $table . ' ADD ' . $this->_extractColumn($columns) . ';';

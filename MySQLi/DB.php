@@ -9,8 +9,9 @@
  * @author  Ozan UYKUN [ozan@znframework.com]
  */
 
-
+use MySQLi;
 use stdClass;
+use Exception;
 use ZN\Support;
 use ZN\ErrorHandling\Errors;
 use ZN\Database\DriverMappingAbstract;
@@ -18,25 +19,21 @@ use ZN\Database\Exception\ConnectionErrorException;
 
 class DB extends DriverMappingAbstract
 {
-    //--------------------------------------------------------------------------------------------------------
-    // Operators
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @var array
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Keep Operators
+     * 
+     * @var array
+     */
     protected $operators =
     [
         'like' => '%'
     ];
 
-    //--------------------------------------------------------------------------------------------------------
-    // Statements
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @var array
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Keep Statements
+     * 
+     * @var array
+     */
     protected $statements =
     [
         'autoincrement' => 'AUTO_INCREMENT',
@@ -51,13 +48,11 @@ class DB extends DriverMappingAbstract
         'default'       => 'DEFAULT'
     ];
 
-    //--------------------------------------------------------------------------------------------------------
-    // Variable Types
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @var array
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Keep Variable Types
+     * 
+     * @var array
+     */
     protected $variableTypes =
     [
         'int'           => 'INT',
@@ -80,13 +75,11 @@ class DB extends DriverMappingAbstract
         'timestamp'     => 'TIMESTAMP'
     ];
 
-    //--------------------------------------------------------------------------------------------------------
-    // Var Types
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @var array
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Keeps Types
+     * 
+     * @var array
+     */
     protected $types = 
     [
         0   => 'DECIMAL',      
@@ -115,40 +108,38 @@ class DB extends DriverMappingAbstract
         255 => 'GEOMETRY'
     ];
 
-    //--------------------------------------------------------------------------------------------------------
-    // Construct
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Magic Constructor
+     */
     public function __construct()
     {
-        Support::func('mysqli_connect', 'MySQLi');
+        Support::extension('MySQLi');
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Connect
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param array $config
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Connection
+     * 
+     * @param array $config = []
+     */
     public function connect($config = [])
     {
-        $this->config  = $config;
-
-        $this->connect = mysqli_connect
-        (
-            $this->config['host'], 
-            $this->config['user'],
-            $this->config['password'], 
-            $this->config['database']
-        );
-
-        if( empty($this->connect) )
+        $this->config = $config;
+        
+        try
         {
-            throw new ConnectionErrorException();
+            mysqli_report(MYSQLI_REPORT_STRICT);
+
+            $this->connect = new MySQLi
+            (
+                $this->config['host'], 
+                $this->config['user'],
+                $this->config['password'], 
+                $this->config['database']
+            );
+        }
+        catch( Exception $e )
+        {
+            throw new ConnectionErrorException;
         }
 
         if( ! empty($this->config['charset']  ) ) $this->query("SET NAMES '".$this->config['charset']."'");  
@@ -156,14 +147,14 @@ class DB extends DriverMappingAbstract
         if( ! empty($this->config['collation']) ) $this->query('SET COLLATION_CONNECTION = "'.$this->config['collation'].'"');
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Exec
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param string $query
-    // @param array  $security
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Execute
+     * 
+     * @param string $query
+     * @param array  $security = NULL
+     * 
+     * @return bool
+     */
     public function exec($query, $security = NULL)
     {
         if( empty($query) )
@@ -171,30 +162,30 @@ class DB extends DriverMappingAbstract
             return false;
         }
 
-        return mysqli_query($this->connect, $query);
+        return $this->connect->query($query);
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Query
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param string $query
-    // @param array  $security
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Query
+     * 
+     * @param string $query
+     * @param array  $security = NULL
+     * 
+     * @return bool
+     */
     public function query($query, $security = NULL)
     {
         return $this->query = $this->exec($query, $security);
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Multi Query
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param string $query
-    // @param array  $security
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Multiple Queries
+     * 
+     * @param string $query
+     * @param array  $security = NULL
+     * 
+     * @return bool
+     */
     public function multiQuery($query, $security = NULL)
     {
         if( empty($query) )
@@ -202,85 +193,65 @@ class DB extends DriverMappingAbstract
             return false;
         }
 
-        return $this->query = mysqli_multi_query($this->connect, $query);
+        return $this->query = $this->connect->multi_query($query);
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Trans Start
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Start Transaction Query
+     * 
+     * @return bool
+     */
     public function transStart()
     {
-        mysqli_autocommit($this->connect, false);
+        $this->connect->autocommit(false);
 
-        return ( phpversion() > 5.5 )
-               ? mysqli_begin_transaction($this->connect)
-               : $this->query('START TRANSACTION');
+        return $this->connect->begin_transaction();
+
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Trans Roll Back
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Rollback Transaction Query
+     * 
+     * @return bool
+     */
     public function transRollback()
     {
-        if( mysqli_rollback($this->connect) )
+        if( $this->connect->rollback() )
         {
-            mysqli_autocommit($this->connect, true);
-
-            return true;
+            return $this->connect->autocommit(true);
         }
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Trans Commit
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Commit Transaction Query
+     * 
+     * @return bool
+     */
     public function transCommit()
     {
-        if( mysqli_commit($this->connect) )
+        if( $this->connect->commit() )
         {
-            mysqli_autocommit($this->connect, true);
-
-            return true;
+            return $this->connect->autocommit(true);
         }
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Insert ID
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Insert Last ID
+     * 
+     * @return int|false
+     */
     public function insertID()
     {
-        if( ! empty($this->connect) )
-        {
-            return mysqli_insert_id($this->connect);
-        }
-        else
-        {
-            return false;
-        }
+        return $this->connect->insert_id ?? false;
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Column Data
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param string $column
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Returns column data
+     * 
+     * @param string $column
+     * 
+     * @return array|object
+     */
     public function columnData($column)
     {
         if( empty($this->query) )
@@ -289,7 +260,7 @@ class DB extends DriverMappingAbstract
         }
 
         $columns   = [];
-        $fieldData = mysqli_fetch_fields($this->query);
+        $fieldData = $this->query->fetch_fields();
         $count     = count($fieldData);
 
         for( $i = 0; $i < $count; $i++ )
@@ -307,32 +278,21 @@ class DB extends DriverMappingAbstract
         return $columns[$column] ?? $columns;
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Num Rows
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Numrows
+     * 
+     * @return int
+     */
     public function numRows()
     {
-        if( ! empty($this->query) )
-        {
-            return mysqli_num_rows($this->query);
-        }
-        else
-        {
-            return 0;
-        }
+        return $this->query->num_rows ?? 0;
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Columns
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Returns columns
+     * 
+     * @return array
+     */
     public function columns()
     {
         if( empty($this->query) )
@@ -341,7 +301,7 @@ class DB extends DriverMappingAbstract
         }
 
         $columns   = [];
-        $fields    = mysqli_fetch_fields($this->query);
+        $fields    = $this->query->fetch_fields();
         $numFields = $this->numFields();
 
         for( $i = 0; $i < $numFields; $i++ )
@@ -352,174 +312,120 @@ class DB extends DriverMappingAbstract
         return $columns;
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Num Fields
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Numfields
+     * 
+     * @return int
+     */
     public function numFields()
     {
-        if( ! empty($this->query) )
-        {
-            return mysqli_num_fields($this->query);
-        }
-        else
-        {
-            return 0;
-        }
+        return $this->query->field_count ?? 0;
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Real Escape String
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param string $data
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Real Escape String 
+     * 
+     * @param string $data
+     * 
+     * @return string|false
+     */
     public function realEscapeString($data)
     {
-        if( ! empty($this->connect) )
+        if( empty($this->query) )
         {
-            return mysqli_real_escape_string($this->connect, $data);
+            return $data;
         }
-        else
-        {
-            return false;
-        }
+
+        return $this->connect->real_escape_string($data);
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Error
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Returns a string description of the last error.
+     * 
+     * @return string|false
+     */
     public function error()
     {
-        if( ! empty($this->connect) )
-        {
-            return mysqli_error($this->connect);
-        }
-        else
-        {
-            return false;
-        }
+        return $this->connect->error ?? false;
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Fetch Array
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Fetch a result row as an associative, a numeric array, or both
+     * 
+     * @return mixed
+     */
     public function fetchArray()
     {
-        if( ! empty($this->query) )
-        {
-            return mysqli_fetch_array($this->query);
-        }
-        else
+        if( empty($this->query) )
         {
             return [];
         }
+
+        return $this->query->fetch_array();
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Fetch Assoc
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Fetch a result row as an associative array
+     * 
+     * @return mixed
+     */
     public function fetchAssoc()
     {
-        if( ! empty($this->query) )
-        {
-            return mysqli_fetch_assoc($this->query);
-        }
-        else
+        if( empty($this->query) )
         {
             return [];
         }
+        
+        return $this->query->fetch_assoc();
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Fetch Row
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Get a result row as an enumerated array
+     * 
+     * @return mixed
+     */
     public function fetchRow()
     {
-        if( ! empty($this->query) )
-        {
-            return mysqli_fetch_row($this->query);
-        }
-        else
+        if( empty($this->query) )
         {
             return [];
         }
+
+        return $this->query->fetch_row();
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Affected Rows
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Gets the number of affected rows in a previous MySQL operation
+     * 
+     * @return int
+     */
     public function affectedRows()
     {
-        if( ! empty($this->connect) )
-        {
-            return mysqli_affected_rows($this->connect);
-        }
-        else
-        {
-            return 0;
-        }
+        return $this->connect->affected_rows ?? 0;
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Close
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Closes a previously opened database connection
+     * 
+     * @return bool
+     */
     public function close()
     {
-        if( ! empty($this->connect) )
-        {
-            mysqli_close($this->connect);
-        }
-        else
+        if( empty($this->query) )
         {
             return false;
         }
+
+       return $this->connect->close();
     }
 
-    //--------------------------------------------------------------------------------------------------------
-    // Version
-    //--------------------------------------------------------------------------------------------------------
-    //
-    // @param void
-    //
-    //--------------------------------------------------------------------------------------------------------
+    /**
+     * Returns the version of the MySQL server as an integer
+     * 
+     * @return int
+     */
     public function version()
     {
-        if( ! empty($this->connect) )
-        {
-            return mysqli_get_server_version($this->connect);
-        }
-        else
-        {
-            return false;
-        }
+        return $this->connect->server_version ?? 0;
     }
 }
