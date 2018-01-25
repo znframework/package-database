@@ -23,7 +23,7 @@ class DriverTool extends DriverExtends
     {
         parent::__construct();
         
-        $this->getLang = Lang::default(new DatabaseDefaultLanguage)::select('Database');
+        $this->getLang = Lang::default('ZN\Database\DatabaseDefaultLanguage')::select('Database');
     }
 
     /**

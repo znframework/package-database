@@ -119,8 +119,10 @@ class DBGrid
      */
     public function __construct()
     {
-        $this->getConfig = Config::default(new DatagridDefaultConfiguration)::get('ViewObjects', 'dbgrid');
-        $this->getLang   = Lang::default(new DatagridDefaultLanguage)->select('ViewObjects');
+        $this->getConfig = Config::default('ZN\Database\DatagridDefaultConfiguration')
+                                 ::get('ViewObjects', 'dbgrid');
+        $this->getLang   = Lang::default('ZN\Database\DatagridDefaultLanguage')
+                               ::select('ViewObjects');
         $this->confirm   = 'return confirm(\''.$this->getLang['areYouSure'].'\');';
 
         $this->db   = Singleton::class('ZN\Database\DB');

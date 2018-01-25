@@ -128,7 +128,8 @@ class Connection
      */
     public function __construct(Array $config = [])
     {
-        $this->defaultConfig = Config::default(new DatabaseDefaultConfiguration)::get('Database', 'database');
+        $this->defaultConfig = Config::default('ZN\Database\DatabaseDefaultConfiguration')
+                                     ::get('Database', 'database');
         $this->config        = array_merge($this->defaultConfig, $config);
         $this->db            = $this->_run();
         $this->prefix        = $this->config['prefix'];
