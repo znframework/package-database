@@ -13,15 +13,15 @@
     "require": {
         "php": ">=7.0.0",
         "znframework/package-zerocore": "5.5.*",
-        "znframework/package-security": "5.0.*",
-        "znframework/package-datatypes": "5.0.*",
-        "znframework/package-request": "5.0.*",
-        "znframework/package-response": "5.0.*",
-        "znframework/package-filesystem": "5.0.*",
-        "znframework/package-cache": "5.0.*",
-        "znframework/package-pagination": "5.0.*",
-        "znframework/package-helpers": "5.0.*",
-        "znframework/package-hypertext": "5.0.*"
+        "znframework/package-security": "5.5.*",
+        "znframework/package-datatypes": "5.5.*",
+        "znframework/package-request": "5.5.*",
+        "znframework/package-response": "5.5.*",
+        "znframework/package-filesystem": "5.5.*",
+        "znframework/package-cache": "5.5.*",
+        "znframework/package-pagination": "5.5.*",
+        "znframework/package-helpers": "5.5.*",
+        "znframework/package-hypertext": "5.5.*"
 	},
     "autoload": {
         "psr-4": {
