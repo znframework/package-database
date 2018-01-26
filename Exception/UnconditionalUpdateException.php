@@ -15,7 +15,11 @@ class UnconditionalUpdateException extends Exception
 {
     const lang = 
     [
-        'tr' => 'Koşulsuz güncelleme işlemi gerçekleştiremezsiniz! Lütfen where() ile koşul tanımlayın.',
-        'en' => 'You can not perform unconditional update! Please define the condition with where ().'
+        'placement' => 
+        [
+            '#' => '[DB::where(mixed $column, string $value [, string $condition = "and"])]'
+        ],
+        'tr' => 'Koşulsuz güncelleme işlemi gerçekleştiremezsiniz! Lütfen # ile koşul tanımlayın.',
+        'en' => 'You can not perform unconditional update! Please define the condition with #.'
     ];
 }

@@ -15,7 +15,11 @@ class UnconditionalDeleteException extends Exception
 {
     const lang = 
     [
-        'tr' => 'Koşulsuz silme işlemi gerçekleştiremezsiniz! Lütfen where() ile koşul tanımlayın.',
-        'en' => 'You can not perform unconditional deletion! Please define the condition with where ().'
+        'placement' => 
+        [
+            '#' => '[DB::where(mixed $column, string $value [, string $condition = "and"])]'
+        ],
+        'tr' => 'Koşulsuz silme işlemi gerçekleştiremezsiniz! Lütfen # ile koşul tanımlayın.',
+        'en' => 'You can not perform unconditional deletion! Please define the condition with #.'
     ];
 }
