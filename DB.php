@@ -1060,6 +1060,10 @@ class DB extends Connection
 
         $this->caching = [];
 
+        $secure = $this->secure ?: $secure;
+
+        $this->secure = [];
+
         return (new self($this->config))->_query($query, $secure, ['caching' => $caching]);
     }
 
@@ -1196,7 +1200,7 @@ class DB extends Connection
      * 
      * @return bool
      */
-    public function increment(String $table = NULL, $columns = [], Int $increment = 1) : Bool
+    public function increment(String $table = NULL, $columns = [], Int $increment = 1)
     {
         return $this->_incdec($table, $columns, $increment, 'increment');
     }
@@ -1210,7 +1214,7 @@ class DB extends Connection
      * 
      * @return bool
      */
-    public function decrement(String $table = NULL, $columns = [], Int $decrement = 1) : Bool
+    public function decrement(String $table = NULL, $columns = [], Int $decrement = 1)
     {
         return $this->_incdec($table, $columns, $decrement, 'decrement');
     }
@@ -1769,7 +1773,7 @@ class DB extends Connection
     }
 
     /**
-     * Simple Delete
+     * Simple Update
      * 
      * @param string $table
      * @param string $data
@@ -2573,6 +2577,11 @@ class DB extends Connection
         $updateQuery = 'UPDATE '.$this->prefix.$table.$set.$where.$this->where;
 
         $this->where = NULL;
+
+        if( $this->string === true )
+        {
+            return $updateQuery;
+        }
 
         return $this->db->query($updateQuery);
     }
