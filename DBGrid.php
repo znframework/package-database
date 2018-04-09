@@ -750,7 +750,7 @@ class DBGrid
 
         if( ! empty($this->joins) )
         {
-            array_unshit($select, $this->table.'.'.$this->processColumn.' as ID');
+            array_unshift($select, $this->table.'.'.$this->processColumn.' as ID');
         }
 
         $this->db->select(...$select);
