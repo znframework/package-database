@@ -92,6 +92,13 @@ class Connection
     protected $stringQuery;
 
     /**
+     * Get string queries
+     * 
+     * @var array
+     */
+    protected $stringQueries;
+
+    /**
      * Keeps select functions
      * 
      * @var array
@@ -253,6 +260,23 @@ class Connection
         if( ! empty($this->stringQuery) )
         {
             return $this->stringQuery;
+        }
+
+        return false;
+    }
+
+    /**
+     * Get string queries
+     * 
+     * @param void
+     * 
+     * @return array|false
+     */
+    public function stringQueries()
+    {
+        if( ! empty($this->stringQueries) )
+        {
+            return $this->stringQueries;
         }
 
         return false;
@@ -464,7 +488,7 @@ class Connection
             Logger::report('DatabaseQueries', $query, 'DatabaseQueries');
         }
 
-        $this->stringQuery = $query;
+        $this->stringQueries[] = $this->stringQuery = $query;
 
         $this->secure = [];
 
