@@ -10,6 +10,7 @@
  */
 
 use ZN\Support;
+use ZN\Security;
 use ZN\Database\DriverMappingAbstract;
 use ZN\Database\Exception\ConnectionErrorException;
 
@@ -307,7 +308,7 @@ class DB extends DriverMappingAbstract
             return false;
         }
 
-        return $this->connect->quote($data);
+        return Security\Injection::escapeStringEncode($data);
     }
 
     /**

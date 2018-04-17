@@ -105,6 +105,28 @@ abstract class DriverMappingAbstract
     }
 
     /**
+     * Where Json
+     * 
+     * @string $column 
+     * @string $value
+     */
+    public function whereJson($column, $value, $type = 'IS NOT NULL')
+    {
+        return 'JSON_SEARCH('.$column.', \'one\', '.$value.') ' . $type;
+    }
+
+    /**
+     * Where Not Json
+     * 
+     * @string $column 
+     * @string $value
+     */
+    public function whereNotJson($column, $value)
+    {
+        return $this->whereJson($column, $value, 'IS NULL');
+    }
+
+    /**
      * Vartypes
      * 
      * @return string

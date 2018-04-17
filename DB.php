@@ -292,6 +292,46 @@ class DB extends Connection
     }
 
     /**
+     * Protected special defined where
+     */
+    protected function specialDefinedWhere($column, String $value = '', String $logical = NULL, $type = 'whereJson')
+    {
+        $this->_wh('exp:' . $this->db->$type($column, $this->_escapeStringAddNail($value)), '', $logical, 'where');
+    }
+
+    /**
+     * Defines SQL WHERE JSON_SEARCH IS NOT NULL
+     * 
+     * @param mixed  $column
+     * @param string $value   = ''
+     * @param string $logical = NULL
+     * 
+     * @return DB
+     */
+    public function whereJson($column, String $value = '', String $logical = NULL) : DB
+    {
+        $this->specialDefinedWhere($column, $value, $logical, __FUNCTION__);
+
+        return $this;
+    }
+
+    /**
+     * Defines SQL WHERE JSON_SEARCH IS NULL
+     * 
+     * @param mixed  $column
+     * @param string $value   = ''
+     * @param string $logical = NULL
+     * 
+     * @return DB
+     */
+    public function whereNotJson($column, String $value = '', String $logical = NULL) : DB
+    {
+        $this->specialDefinedWhere($column, $value, $logical, __FUNCTION__);
+
+        return $this;
+    }
+
+    /**
      * Defines SQL WHERE 
      * 
      * @param array ...$args
