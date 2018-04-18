@@ -292,11 +292,49 @@ class DB extends Connection
     }
 
     /**
-     * Protected special defined where
+     * Defines SQL WHERE 
+     * 
+     * @param mixed  $column
+     * @param string $value   = ''
+     * 
+     * @return DB
      */
-    protected function specialDefinedWhere($column, String $value = '', String $logical = NULL, $type = 'whereJson')
+    public function whereAnd($column, String $value = '') : DB
     {
-        $this->_wh('exp:' . $this->db->$type($column, $this->_escapeStringAddNail($value)), '', $logical, 'where');
+        $this->where($column, $value, 'AND');
+
+        return $this;
+    }
+
+    /**
+     * Defines SQL WHERE 
+     * 
+     * @param mixed  $column
+     * @param string $value   = ''
+     * 
+     * @return DB
+     */
+    public function whereOr($column, String $value = '') : DB
+    {
+        $this->where($column, $value, 'OR');
+
+        return $this;
+    }
+
+    /**
+     * Defines SQL WHERE 
+     * 
+     * @param mixed  $column
+     * @param string $value   = ''
+     * @param string $logical = NULL
+     * 
+     * @return DB
+     */
+    public function whereNot($column, String $value = '', String $logical = NULL) : DB
+    {
+        $this->where($column . ' != ', $value, $logical);
+
+        return $this;
     }
 
     /**
@@ -327,6 +365,135 @@ class DB extends Connection
     public function whereNotJson($column, String $value = '', String $logical = NULL) : DB
     {
         $this->specialDefinedWhere($column, $value, $logical, __FUNCTION__);
+
+        return $this;
+    }
+
+    /**
+     * Defines SQL WHERE BETWEEN value1 and value2
+     * 
+     * @param mixed  $column
+     * @param string $value1
+     * @param string $value2
+     * @param string $logical = NULL
+     * 
+     * @return DB
+     */
+    public function whereBetween($column, String $value1, String $value2, String $logical = NULL) : DB
+    {
+        $this->where($column . ' between', $this->between($value1, $value2), $logical);
+
+        return $this;
+    }
+
+    /**
+     * Defines SQL WHERE LIKE %value%
+     * 
+     * @param mixed  $column
+     * @param string $value
+     * @param string $logical = NULL
+     * 
+     * @return DB
+     */
+    public function whereLike($column, String $value, String $logical = NULL) : DB
+    {
+        $this->where($column . ' like', $this->like($value, 'inside'), $logical);
+
+        return $this;
+    }
+
+    /**
+     * Defines SQL WHERE LIKE value%
+     * 
+     * @param mixed  $column
+     * @param string $value
+     * @param string $logical = NULL
+     * 
+     * @return DB
+     */
+    public function whereStartLike($column, String $value, String $logical = NULL) : DB
+    {
+        $this->where($column . ' like', $this->like($value, 'starting'), $logical);
+
+        return $this;
+    }
+
+    /**
+     * Defines SQL WHERE LIKE %value
+     * 
+     * @param mixed  $column
+     * @param string $value
+     * @param string $logical = NULL
+     * 
+     * @return DB
+     */
+    public function whereEndLike($column, String $value, String $logical = NULL) : DB
+    {
+        $this->where($column . ' like', $this->like($value, 'ending'), $logical);
+
+        return $this;
+    }
+
+    /**
+     * Defines SQL WHERE IN(...$values)
+     * 
+     * @param mixed  $column
+     * @param array  $values
+     * @param string $logical = NULL
+     * 
+     * @return DB
+     */
+    public function whereIn($column, Array $values, String $logical = NULL) : DB
+    {
+        $this->where($column . ' in', $this->in(...$values), $logical);
+
+        return $this;
+    }
+
+    /**
+     * Defines SQL WHERE NOT IN(...$values)
+     * 
+     * @param mixed  $column
+     * @param array  $values
+     * @param string $logical = NULL
+     * 
+     * @return DB
+     */
+    public function whereNotIn($column, Array $values, String $logical = NULL) : DB
+    {
+        $this->where($column . ' not in', $this->notIn(...$values), $logical);
+
+        return $this;
+    }
+
+    /**
+     * Defines SQL WHERE IN(SELECT * FROM $table)
+     * 
+     * @param mixed  $column
+     * @param string $table
+     * @param string $logical = NULL
+     * 
+     * @return DB
+     */
+    public function whereInTable($column, String $table, String $logical = NULL) : DB
+    {
+        $this->where($column . ' in', $this->inTable($table), $logical);
+
+        return $this;
+    }
+
+    /**
+     * Defines SQL WHERE IN(SELECT * FROM $table)
+     * 
+     * @param mixed  $column
+     * @param string $table
+     * @param string $logical = NULL
+     * 
+     * @return DB
+     */
+    public function whereInQuery($column, String $table, String $logical = NULL) : DB
+    {
+        $this->where($column . ' in', $this->inQuery($table), $logical);
 
         return $this;
     }
@@ -2049,6 +2216,14 @@ class DB extends Connection
     public function inQuery(String ...$value) : String
     {
         return $this->_in(__FUNCTION__, ...$value);
+    }
+
+    /**
+     * Protected special defined where
+     */
+    protected function specialDefinedWhere($column, String $value = '', String $logical = NULL, $type = 'whereJson')
+    {
+        $this->where('exp:' . $this->db->$type($column, $this->_escapeStringAddNail($value)), '', $logical, 'where');
     }
 
     /**
