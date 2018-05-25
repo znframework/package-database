@@ -27,6 +27,19 @@ Basic level usage is shown below.
 
 ZN\Autoloader::register('standart');
 
+#The default settings are in the ZN\Database\DatabaseDefaultConfiguration file. 
+#You can make your settings in this file.
+#The Config::set() method should be used if you need to configure settings externally.
+Config::database('database', 
+[
+    'driver'   => 'mysqli',
+    'host'     => 'localhost', 
+    'database' => 'test',
+    'user'     => 'root',
+    'password' => '',
+    'prefix'   => ''
+]);
+
 $persons = DB::persons();
 
 Output::display($persons->result());
