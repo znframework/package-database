@@ -9,7 +9,7 @@ You only need to run the following code for the installation.
 </p>
 
 ```
-composer create-project znframework/custom-edition
+composer require znframework/custom-edition
 ```
 
 <h3>Documentation</h3>
