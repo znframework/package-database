@@ -25,7 +25,7 @@ Basic level usage is shown below.
 ```php
 <?php require 'vendor/autoload.php';
 
-ZN\Autoloader::register('standart');
+ZN\ZN::run();
 
 # The default settings are in the ZN\Database\DatabaseDefaultConfiguration file. 
 # You can make your settings in this file.
