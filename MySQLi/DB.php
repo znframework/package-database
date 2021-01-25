@@ -203,7 +203,7 @@ class DB extends DriverMappingAbstract
             return false;
         }
 
-        return $this->query = $this->connect->multi_query($query);
+        return (bool) ($this->query = $this->connect->multi_query($query));
     }
 
     /**
