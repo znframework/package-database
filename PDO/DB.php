@@ -1,4 +1,4 @@
-<?php namespace ZN\Database\Postgres;
+<?php namespace ZN\Database\PDO;
 /**
  * ZN PHP Web Framework
  * 
@@ -9,12 +9,16 @@
  * @author  Ozan UYKUN [ozan@znframework.com]
  */
 
-use stdClass;
+use PDO;
+use PDOException;
 use ZN\Support;
-use ZN\ErrorHandling\Errors;
+use ZN\Security;
 use ZN\Database\DriverMappingAbstract;
 use ZN\Database\Exception\ConnectionErrorException;
 
+/**
+ * @codeCoverageIgnore
+ */
 class DB extends DriverMappingAbstract
 {
     /**
@@ -34,7 +38,7 @@ class DB extends DriverMappingAbstract
      */
     protected $statements =
     [
-        'autoincrement' => 'BIGSERIAL',
+        'autoincrement' => 'AUTO_INCREMENT',
         'primarykey'    => 'PRIMARY KEY',
         'foreignkey'    => 'FOREIGN KEY',
         'unique'        => 'UNIQUE',
@@ -78,7 +82,7 @@ class DB extends DriverMappingAbstract
      */
     public function __construct()
     {
-        Support::func('pg_connect', 'Postgres');
+        Support::extension('PDO', 'PDO');
     }
 
     /**
@@ -89,34 +93,40 @@ class DB extends DriverMappingAbstract
     public function connect($config = [])
     {
         $this->config = $config;
+        
+        $options = [];
 
-        $dsn = 'host='.$this->config['host'].' ';
-
-        if( ! empty($this->config['port']) )     $dsn .= 'port='.$this->config['port'].' ';
-        if( ! empty($this->config['database']) ) $dsn .= 'dbname='.$this->config['database'].' ';
-        if( ! empty($this->config['user']) )     $dsn .= 'user='.$this->config['user'].' ';
-        if( ! empty($this->config['password']) ) $dsn .= 'password='.$this->config['password'].' ';
-
-        if( ! empty($this->config['dsn']) )
+        if( $this->config['pconnect'] === true )
         {
-            $dsn = $this->config['dsn'];
+            $options[PDO::ATTR_PERSISTENT] = true;
         }
 
-        $connectMethod = $this->config['pconnect'] === true ? 'pg_pconnect' : 'pg_connect';
-
-        $this->connect = $connectMethod(rtrim($dsn));
-
-        if( empty($this->connect) )
+        try
         {
-            throw new ConnectionErrorException(NULL, 'connection');
-        }
+            $ssl = $this->config['ssl'] ?? NULL;
 
-        if( ! empty($this->config['charset']) )
+            if( ! empty($ssl['key'   ]) ) $options[PDO::MYSQL_ATTR_SSL_KEY]    = $ssl['key'   ];
+            if( ! empty($ssl['cert'  ]) ) $options[PDO::MYSQL_ATTR_SSL_CERT]   = $ssl['cert'  ];
+            if( ! empty($ssl['ca'    ]) ) $options[PDO::MYSQL_ATTR_SSL_CA]     = $ssl['ca'    ];
+            if( ! empty($ssl['capath']) ) $options[PDO::MYSQL_ATTR_SSL_CAPATH] = $ssl['capath'];
+            if( ! empty($ssl['cipher']) ) $options[PDO::MYSQL_ATTR_SSL_CIPHER] = $ssl['cipher'];
+
+            $this->connect = new PDO
+            (
+                $this->config['dsn'] ?: $this->_dsn($this->config), 
+                $this->config['user'], 
+                $this->config['password'],
+                $options
+            );
+        }
+        catch( PDOException $e )
         {
-            $charset = $this->config['charset'] === 'utf8' ? 'UNICODE' : $this->config['charset'];
-
-            pg_set_client_encoding($this->connect, $charset);
+            throw new ConnectionErrorException(NULL, $e->getMessage());
         }
+        
+        if( ! empty($this->config['charset']  ) ) $this->connect->exec("SET NAMES '".$this->config['charset']."'");
+        if( ! empty($this->config['charset']  ) ) $this->connect->exec('SET CHARACTER SET '.$this->config['charset']);
+        if( ! empty($this->config['collation']) ) $this->connect->exec("SET COLLATION_CONNECTION = '".$this->config['collation']."'");     
     }
 
     /**
@@ -134,7 +144,7 @@ class DB extends DriverMappingAbstract
             return false;
         }
 
-        return pg_query($this->connect, $query);
+        return $this->connect->exec($query);
     }
 
     /**
@@ -160,7 +170,9 @@ class DB extends DriverMappingAbstract
      */
     public function query($query, $security = [])
     {
-        return $this->query = $this->exec($query);
+        $this->query = $this->connect->prepare($query);
+        
+        return $this->query->execute($security);
     }
 
     /**
@@ -170,7 +182,7 @@ class DB extends DriverMappingAbstract
      */
     public function transStart()
     {
-        return (bool) pg_query($this->connect, 'BEGIN');
+        return $this->connect->beginTransaction();
     }
 
     /**
@@ -180,7 +192,7 @@ class DB extends DriverMappingAbstract
      */
     public function transRollback()
     {
-        return (bool) pg_query($this->connect, 'ROLLBACK');
+        return $this->connect->rollBack();
     }
 
     /**
@@ -190,7 +202,7 @@ class DB extends DriverMappingAbstract
      */
     public function transCommit()
     {
-        return (bool) pg_query($this->connect, 'COMMIT');
+        return $this->connect->commit();
     }
 
     /**
@@ -200,12 +212,14 @@ class DB extends DriverMappingAbstract
      */
     public function insertID()
     {
-        if( empty($this->query) )
+        if( ! empty($this->connect) )
+        {
+            return $this->connect->lastInsertId('id');
+        }
+        else
         {
             return false;
         }
-
-        return pg_last_oid($this->query);
     }
 
     /**
@@ -227,17 +241,19 @@ class DB extends DriverMappingAbstract
 
         for( $i = 0; $i < $numFields; $i++ )
         {
-            $fieldName = pg_field_name($this->query, $i);
+            $field     = $this->query->getColumnMeta($i);
+            $fieldName = $field['name'];
 
-            $columns[$fieldName]             = new stdClass();
+            $columns[$fieldName]             = new \stdClass();
             $columns[$fieldName]->name       = $fieldName;
-            $columns[$fieldName]->type       = pg_field_type($this->query, $i);
-            $columns[$fieldName]->maxLength  = pg_field_size($this->query, $i);
-            $columns[$fieldName]->primaryKey = NULL;
+            $columns[$fieldName]->type       = $field['native_type'];
+            $columns[$fieldName]->maxLength  = ($field['len'] > 0) ? $field['len'] : NULL;
+            $columns[$fieldName]->primaryKey = (int) ( ! empty($field['flags']) && in_array('primary_key', $field['flags'], TRUE));
             $columns[$fieldName]->default    = NULL;
         }
 
         return $columns[$col] ?? $columns;
+
     }
 
     /**
@@ -249,12 +265,10 @@ class DB extends DriverMappingAbstract
     {
         if( ! empty($this->query) )
         {
-            return pg_num_rows($this->query);
+            return $this->query->rowCount();
         }
-        else
-        {
-            return 0;
-        }
+
+        return 0;
     }
 
     /**
@@ -274,7 +288,12 @@ class DB extends DriverMappingAbstract
 
         for( $i = 0; $i < $numFields; $i++ )
         {
-            $columns[] = pg_field_name($this->query, $i);
+            $meta = $this->query->getColumnMeta($i);
+
+            if( $meta['name'] !== NULL )
+            {
+                $columns[] = $meta['name'];
+            }
         }
 
         return $columns;
@@ -287,9 +306,9 @@ class DB extends DriverMappingAbstract
      */
     public function numFields()
     {
-        if( ! empty($this->query) )
+        if( isset($this->query) )
         {
-            return pg_num_fields($this->query);
+            return $this->query->columnCount();
         }
         else
         {
@@ -306,7 +325,12 @@ class DB extends DriverMappingAbstract
      */
     public function realEscapeString($data = '')
     {
-        return pg_escape_string($this->connect, $data);
+        if( empty($this->connect) )
+        {
+            return false;
+        }
+
+        return Security\Injection::escapeStringEncode($data);
     }
 
     /**
@@ -316,9 +340,18 @@ class DB extends DriverMappingAbstract
      */
     public function error()
     {
-        if( is_resource($this->connect) )
+        if( isset($this->connect) )
         {
-            return pg_last_error($this->connect) ?: false;
+            if( ! empty($this->query) )
+            {
+                $error = $this->query->errorInfo();
+            }
+            else
+            {
+                $error = $this->connect->errorInfo();
+            }
+
+            return $error[2] ?: false;
         }
         else
         {
@@ -335,7 +368,7 @@ class DB extends DriverMappingAbstract
     {
         if( ! empty($this->query) )
         {
-            return pg_fetch_array($this->query);
+            return $this->query->fetch(PDO::FETCH_BOTH);
         }
         else
         {
@@ -352,7 +385,7 @@ class DB extends DriverMappingAbstract
     {
         if( ! empty($this->query) )
         {
-            return pg_fetch_assoc($this->query);
+            return $this->query->fetch(PDO::FETCH_ASSOC);
         }
         else
         {
@@ -369,7 +402,7 @@ class DB extends DriverMappingAbstract
     {
         if( ! empty($this->query) )
         {
-            return pg_fetch_row($this->query);
+            return $this->query->fetch();
         }
         else
         {
@@ -384,9 +417,9 @@ class DB extends DriverMappingAbstract
      */
     public function affectedRows()
     {
-        if( is_resource($this->connect) )
+        if( ! empty($this->query) )
         {
-            return pg_affected_rows($this->connect);
+            return $this->query->rowCount();
         }
         else
         {
@@ -401,15 +434,9 @@ class DB extends DriverMappingAbstract
      */
     public function close()
     {
-        if( is_resource($this->connect) )
+        if( isset($this->connect) )
         {
-            // pg_close($this->connect);
-
-            return true;
-        }
-        else
-        {
-            return false;
+            $this->connect = NULL;
         }
     }
 
@@ -420,9 +447,43 @@ class DB extends DriverMappingAbstract
      */
     public function version()
     {
-        if( is_resource($this->connect) )
+        if( ! empty($this->connect) )
         {
-            return pg_version($this->connect);
+            return $this->connect->getAttribute(PDO::ATTR_SERVER_VERSION);
         }
+        else
+        {
+            return false;
+        }
+    }
+
+    /**
+     * Protected DSN
+     * 
+     * @param array $config
+     * 
+     * @return string
+     */
+    protected function _dsn(Array $config) : String
+    {
+        $dsn  = 'mysql:';
+
+        $dsn .= ( ! empty($config['host']) )
+                ? 'host='.$config['host'].';'
+                : '';
+
+        $dsn .= ( ! empty($config['database']) )
+                ? 'dbname='.$config['database'].';'
+                : '';
+
+        $dsn .= ( ! empty($config['port']) )
+                ? 'port='.$config['port'].';'
+                : '';
+
+        $dsn .= ( ! empty($config['charset']) )
+                ? 'charset='.$config['charset']
+                : '';
+
+        return rtrim($dsn, ';');
     }
 }
