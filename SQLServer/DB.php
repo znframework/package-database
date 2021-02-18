@@ -203,9 +203,8 @@ class DB extends DriverMappingAbstract
     public function insertID()
     {
         $this->query('SELECT @@IDENTITY AS insert_id');
-        $row = $query->row();
-
-        return $row->insert_id;
+        
+        return $this->fetchAssoc()['insert_id'];
     }
 
     /**
@@ -246,14 +245,7 @@ class DB extends DriverMappingAbstract
      */
     public function numRows()
     {
-        if( ! empty($this->query) )
-        {
-            return sqlsrv_num_rows($this->query);
-        }
-        else
-        {
-            return 0;
-        }
+        return false;
     }
 
     /**
@@ -318,7 +310,7 @@ class DB extends DriverMappingAbstract
     {
         if( ! empty($this->connect) )
         {
-            $error = sqlsrv_errors(SQLSRV_ERR_ERRORS);
+            $error = sqlsrv_errors(SQLSRV_ERR_ERRORS)[0] ?? [];
 
             return ! empty($error['code']) ? ($error['message'] ?: false) : false;
         }
@@ -371,7 +363,7 @@ class DB extends DriverMappingAbstract
     {
         if( ! empty($this->query) )
         {
-            return sqlsrv_fetch($this->query, SQLSRV_FETCH_ASSOC);
+            return sqlsrv_fetch_array($this->query, SQLSRV_FETCH_NUMERIC);
         }
         else
         {
@@ -386,9 +378,9 @@ class DB extends DriverMappingAbstract
      */
     public function affectedRows()
     {
-        if( ! empty($this->connect) )
+        if( ! empty($this->query) )
         {
-            return sqlsrv_rows_affected($this->connect);
+            return sqlsrv_rows_affected($this->query);
         }
         else
         {
@@ -405,7 +397,7 @@ class DB extends DriverMappingAbstract
     {
         if( ! empty($this->connect) )
         {
-            @sqlsrv_close($this->connect);
+            return sqlsrv_close($this->connect);
         }
         else
         {
