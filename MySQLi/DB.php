@@ -421,12 +421,12 @@ class DB extends DriverMappingAbstract
      */
     public function close()
     {
-        if( empty($this->query) )
+        if( ! empty($this->connect) )
         {
-            return false;
+            return $this->connect->close();
         }
 
-        return $this->connect->close();
+        return false;
     }
 
     /**
@@ -436,6 +436,6 @@ class DB extends DriverMappingAbstract
      */
     public function version()
     {
-        return $this->connect->server_version ?? 0;
+        return (string) ($this->connect->server_version ?? 0);
     }
 }
