@@ -216,7 +216,6 @@ class DB extends DriverMappingAbstract
         $this->connect->autocommit(false);
 
         return $this->connect->begin_transaction();
-
     }
 
     /**
@@ -230,6 +229,8 @@ class DB extends DriverMappingAbstract
         {
             return $this->connect->autocommit(true);
         }
+
+        return false;
     }
 
     /**
@@ -243,6 +244,8 @@ class DB extends DriverMappingAbstract
         {
             return $this->connect->autocommit(true);
         }
+
+        return false;
     }
 
     /**
