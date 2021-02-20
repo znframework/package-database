@@ -132,6 +132,7 @@ class DB extends DriverMappingAbstract
         $port = $this->config['port'] ?: 3306;
         $ssl  = $this->config['ssl'] ?? NULL;
 
+        // @codeCoverageIgnoreStart
         set_error_handler(function(){});
         if( ! empty($ssl['key']) || ! empty($ssl['cert']) || ! empty($ssl['ca']) || ! empty($ssl['capath']) || ! empty($ssl['cipher']) )
         {
@@ -141,6 +142,7 @@ class DB extends DriverMappingAbstract
             $this->connect->ssl_set($ssl['key'] ?? NULL, $ssl['cert'] ?? NULL, $ssl['ca'] ?? NULL, $ssl['capath'] ?? NULL, $ssl['cipher'] ?? NULL); 
             $this->connect->real_connect($host, $user, $pass, $db, $port, NULL, MYSQLI_CLIENT_SSL);
         }  
+        // @codeCoverageIgnoreEnd
         else
         {
             $this->connect = new MySQLi($host, $user, $pass, $db, $port);
@@ -149,7 +151,7 @@ class DB extends DriverMappingAbstract
         
         if( $this->connect->connect_errno )
         {
-            throw new ConnectionErrorException(NULL, $this->connect->connect_error);
+            throw new ConnectionErrorException(NULL, $this->connect->connect_error); // @codeCoverageIgnore
         }
 
         if( ! empty($this->config['charset']  ) ) $this->query("SET NAMES '".$this->config['charset']."'");  
@@ -200,7 +202,7 @@ class DB extends DriverMappingAbstract
     {
         if( empty($query) )
         {
-            return false;
+            return false; // @codeCoverageIgnore
         }
 
         return (bool) ($this->query = $this->connect->multi_query($query));
@@ -230,7 +232,7 @@ class DB extends DriverMappingAbstract
             return $this->connect->autocommit(true);
         }
 
-        return false;
+        return false; // @codeCoverageIgnore
     }
 
     /**
@@ -245,7 +247,7 @@ class DB extends DriverMappingAbstract
             return $this->connect->autocommit(true);
         }
 
-        return false;
+        return false; // @codeCoverageIgnore
     }
 
     /**
@@ -346,7 +348,7 @@ class DB extends DriverMappingAbstract
     {
         if( empty($this->query) )
         {
-            return $data;
+            return $data; // @codeCoverageIgnore
         }
 
         return $this->connect->real_escape_string($data);
@@ -415,21 +417,6 @@ class DB extends DriverMappingAbstract
     public function affectedRows()
     {
         return $this->connect->affected_rows ?? 0;
-    }
-
-    /**
-     * Closes a previously opened database connection
-     * 
-     * @return bool
-     */
-    public function close()
-    {
-        if( ! empty($this->connect) )
-        {
-            return $this->connect->close();
-        }
-
-        return false;
     }
 
     /**

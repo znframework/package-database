@@ -45,7 +45,6 @@ abstract class DriverMappingAbstract
     public function fetchAssoc(){}
     public function fetchRow(){}
     public function affectedRows(){}
-    public function close(){}
     public function version(){}
 
     /**
@@ -53,9 +52,7 @@ abstract class DriverMappingAbstract
      * 
      * @param string $data
      * 
-     * @return string
-     * 
-     * @codeCoverageIgnore
+     * @return array
      */
     public function cleanLimit($data)
     {
@@ -68,8 +65,6 @@ abstract class DriverMappingAbstract
      * @param string $data
      * 
      * @return array
-     * 
-     * @codeCoverageIgnore
      */
     public function getLimitValues($data)
     {
@@ -94,9 +89,7 @@ abstract class DriverMappingAbstract
     }
 
     /**
-     * protected get insert extras by driver
-     * 
-     * @return false
+     * protected get insert extras by drvier
      * 
      * @codeCoverageIgnore
      */
@@ -143,6 +136,8 @@ abstract class DriverMappingAbstract
      * Result Array 
      * 
      * @return array
+     * 
+     * @codeCoverageIgnore
      */
     public function resultArray()
     {
@@ -158,9 +153,9 @@ abstract class DriverMappingAbstract
     {
         if( ! empty($this->query) )
         {
-            $data = $this->fetchAssoc();
+            $data = $this->fetchAssoc(); // @codeCoverageIgnore
 
-            return (object) $data;
+            return (object) $data; // @codeCoverageIgnore
         }
         else
         {
@@ -191,12 +186,14 @@ abstract class DriverMappingAbstract
         {
             return $this->statements('foreignkey', $column);
         }
+        // @codeCoverageIgnoreStart
         elseif( $column === NULL )
         {
             return $this->statements('foreignkey');
         }
        
         return $this->statements('foreignkey') . ' ' . $this->references($column, $references);
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -314,12 +311,32 @@ abstract class DriverMappingAbstract
         {
             if( strstr($isstate, '%') )
             {
-                $vartype = str_replace('%', $len, $isstate);
+                $vartype = str_replace('%', $len, $isstate); // @codeCoverageIgnore
 
-                return $this->cvartype($vartype); 
+                return $this->cvartype($vartype); // @codeCoverageIgnore
             }
 
             return $this->cvartype($isstate, $len, $type);
+        }
+        else
+        {
+            return false; // @codeCoverageIgnore
+        }
+    }
+
+    /**
+     * Closes a previously opened database connection
+     * 
+     * @return bool
+     */
+    public function close()
+    {
+        if( ! empty($this->connect) )
+        {
+            $this->query   = NULL;
+            $this->connect = NULL;
+
+            return true;
         }
         else
         {
@@ -351,16 +368,7 @@ abstract class DriverMappingAbstract
             return  $this->cvartype($isvartype, $len, $type);
         }
         
-        return false;
-    }
-
-    /**
-     * Close Connection
-     */
-    public function closeConnection()
-    {
-        $this->query   = NULL;
-        $this->connect = NULL;
+        return false; // @codeCoverageIgnore
     }
 
     /**
@@ -385,6 +393,6 @@ abstract class DriverMappingAbstract
             return $row;
         }
         
-        return $row;
+        return $row; // @codeCoverageIgnore
     }
 }

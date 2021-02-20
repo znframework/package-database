@@ -98,10 +98,13 @@ class DB extends DriverMappingAbstract
                              ? new SQLite3($this->config['database'], SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE, $this->config['password'])
                              : new SQLite3($this->config['database']);
         }
+
+        // @codeCoverageIgnoreStart
         catch( Exception $e )
         {
             throw new ConnectionErrorException(NULL, $this->connect->lastErrorMsg());
         }
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -187,7 +190,7 @@ class DB extends DriverMappingAbstract
     {
         if( empty($this->connect) )
         {
-            return false;
+            return false; // @codeCoverageIgnore
         }
 
         return $this->connect->lastInsertRowID();
@@ -204,7 +207,7 @@ class DB extends DriverMappingAbstract
     {
         if( empty($this->query) )
         {
-            return false;
+            return false; // @codeCoverageIgnore
         }
 
         $dataTypes =
@@ -301,7 +304,7 @@ class DB extends DriverMappingAbstract
     {
         if( empty($this->connect) )
         {
-            return $data;
+            return $data; // @codeCoverageIgnore
         }
 
         return $this->connect->escapeString($data);
@@ -337,7 +340,7 @@ class DB extends DriverMappingAbstract
         }
         else
         {
-            return [];
+            return []; // @codeCoverageIgnore
         }
     }
 
@@ -354,7 +357,7 @@ class DB extends DriverMappingAbstract
         }
         else
         {
-            return [];
+            return []; // @codeCoverageIgnore
         }
     }
 
@@ -388,24 +391,7 @@ class DB extends DriverMappingAbstract
         }
         else
         {
-            return 0;
-        }
-    }
-
-    /**
-     * Closes a previously opened database connection
-     * 
-     * @return bool
-     */
-    public function close()
-    {
-        if( ! empty($this->connect) )
-        {
-            @$this->connect->close();
-        }
-        else
-        {
-            return false;
+            return 0; // @codeCoverageIgnore
         }
     }
 
@@ -424,7 +410,7 @@ class DB extends DriverMappingAbstract
         }
         else
         {
-            return false;
+            return false; // @codeCoverageIgnore
         }
     }
 }

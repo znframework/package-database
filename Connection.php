@@ -19,13 +19,6 @@ use ZN\Database\Exception\InvalidArgumentException;
 class Connection
 {
     /**
-     * Keeps results
-     * 
-     * @var array
-     */
-    protected $results;
-
-    /**
      * Keeps database drivers
      * 
      * @var array
@@ -490,6 +483,7 @@ class Connection
 
             $secureParams = [];
 
+            // @codeCoverageIgnoreStart
             if( is_numeric(key($secure)) )
             {
                 $strex  = explode('?', $query);
@@ -504,6 +498,7 @@ class Connection
 
                 $query = $newstr;
             }
+            // @codeCoverageIgnoreEnd
             else
             {
                 foreach( $this->secure as $k => $v )
@@ -519,7 +514,7 @@ class Connection
 
         if( ($this->config['queryLog'] ?? NULL) === true )
         {
-            Logger::report('DatabaseQueries', $query, 'DatabaseQueries');
+            Logger::report('DatabaseQueries', $query, 'DatabaseQueries'); // @codeCoverageIgnore
         }
 
         $this->stringQueries[] = $this->stringQuery = $query;
@@ -550,22 +545,26 @@ class Connection
             $return = true;
             $as     = Arrays\GetElement::last($args);
 
+            // @codeCoverageIgnoreStart
             if( stripos(trim($as), 'as') === 0 )
             {
                 $asparam .= $as;
                 array_pop($args);
             }
+            // @codeCoverageIgnoreEnd
         }
         else
         {
             $return = false;
         }
 
+        // @codeCoverageIgnoreStart
         if( stripos(trim($getLast), 'as') === 0 )
         {
             $asparam .= $getLast;
             array_pop($args);
         }
+        // @codeCoverageIgnoreEnd
 
         $args = $type.'('.rtrim(implode(',', $args), ',').')'.$asparam;
 
@@ -629,18 +628,27 @@ class Connection
      */
     protected function _runQuery($query, $type = 'query')
     {
+        // @codeCoverageIgnoreStart
         if( $this->string === true )
         {
             $this->string = NULL;
 
             return $query;
         }
+        // @codeCoverageIgnoreEnd
 
         if( $this->transaction === true )
         {
             $this->transactionQueries[] = $query;
 
             return $this;
+        }
+
+        if( empty($query) )
+        {
+            $this->stringQuery = NULL;
+
+            return false;
         }
 
         $this->db->$type($this->_querySecurity($query), $this->secure);
@@ -703,6 +711,6 @@ class Connection
      */
     public function __destruct()
     {
-        $this->results = NULL; $this->db->close(); $this->db->closeConnection();
+        $this->db->close();
     }
 }

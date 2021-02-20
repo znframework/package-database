@@ -121,7 +121,7 @@ class DB extends DriverMappingAbstract
         }
         catch( PDOException $e )
         {
-            throw new ConnectionErrorException(NULL, $e->getMessage());
+            throw new ConnectionErrorException(NULL, $this->getMessage());
         }
         
         if( ! empty($this->config['charset']  ) ) $this->connect->exec("SET NAMES '".$this->config['charset']."'");
@@ -424,19 +424,6 @@ class DB extends DriverMappingAbstract
         else
         {
             return 0;
-        }
-    }
-
-    /**
-     * Closes a previously opened database connection
-     * 
-     * @return bool
-     */
-    public function close()
-    {
-        if( isset($this->connect) )
-        {
-            $this->connect = NULL;
         }
     }
 

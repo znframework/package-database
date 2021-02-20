@@ -322,7 +322,7 @@ class DB extends DriverMappingAbstract
         }
         else
         {
-            return false; 
+            return false; // @codeCoverageIgnore
         }
     }
 
@@ -395,23 +395,6 @@ class DB extends DriverMappingAbstract
     }
 
     /**
-     * Closes a previously opened database connection
-     * 
-     * @return bool
-     */
-    public function close()
-    {
-        if( is_resource($this->connect) )
-        {
-            return pg_close($this->connect);
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    /**
      * Returns the version of the MySQL server as an integer
      * 
      * @return int
@@ -423,13 +406,13 @@ class DB extends DriverMappingAbstract
             return pg_version($this->connect)['client'];
         }
 
-        return false;
+        return false; // @codeCoverageIgnore
     }
 
     /**
-     * Get insert extras by driver
+     * protected get insert extras by drvier
      * 
-     * @return string
+     * @codeCoverageIgnore
      */
     public function getInsertExtrasByDriver()
     {

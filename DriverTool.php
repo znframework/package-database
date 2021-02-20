@@ -76,7 +76,7 @@ class DriverTool extends DriverExtends
 
             foreach( $listTables as $table )
             {
-                $infos->$table = $this->differentConnection->status($table)->row();
+                $infos->$table = $this->differentConnection->status($table)->row(); // @codeCoverageIgnore
             }
         }
         elseif( is_array($table) )
@@ -124,10 +124,12 @@ class DriverTool extends DriverExtends
         {
             foreach( $result as $tables )
             {
+                // @codeCoverageIgnoreStart
                 foreach( $tables as $db => $tableName )
                 {
                     $status = $this->differentConnection->query($query . ' ' . $tableName);
                 }
+                // @codeCoverageIgnoreEnd
             }
         }
         else
@@ -163,7 +165,7 @@ class DriverTool extends DriverExtends
     {
         if( $path === STORAGE_DIR )
         {
-            $path .= 'DatabaseBackup';
+            $path .= 'DatabaseBackup'; // @codeCoverageIgnore
         }
 
         $eol = EOL;
@@ -176,7 +178,7 @@ class DriverTool extends DriverExtends
 
             foreach( $resultArray as $key => $val )
             {
-                $tables[] = current($val);
+                $tables[] = current($val); // @codeCoverageIgnore
             }
         }
         else
@@ -192,7 +194,7 @@ class DriverTool extends DriverExtends
         {
             if( ! empty(Properties::$prefix) && ! strstr($table, Properties::$prefix) )
             {
-                $table = Properties::$prefix.$table;
+                $table = Properties::$prefix.$table; // @codeCoverageIgnore
             }
 
             $return .= 'DROP TABLE IF EXISTS '.$table.';';
@@ -204,6 +206,7 @@ class DriverTool extends DriverExtends
                 continue;
             }
 
+            // @codeCoverageIgnoreStart
             $fetchResult = $this->differentConnection->query('SELECT * FROM '.$table)->result();
 
             $return .= $eol.$eol.$fetchRow[1].";".$eol.$eol;
@@ -232,6 +235,8 @@ class DriverTool extends DriverExtends
             }
 
             $return .= $eol.$eol.$eol;
+
+            // @codeCoverageIgnoreEnd
         }
 
         if( ! trim($return) )
@@ -246,7 +251,7 @@ class DriverTool extends DriverExtends
 
         if( ! is_dir($path) )
         {
-            mkdir($path);
+            mkdir($path); // @codeCoverageIgnore
         }
 
         file_put_contents(Base::suffix($path) . $fileName, $return);

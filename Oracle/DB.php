@@ -16,6 +16,9 @@ use ZN\ErrorHandling\Errors;
 use ZN\Database\DriverMappingAbstract;
 use ZN\Database\Exception\ConnectionErrorException;
 
+/**
+ * @codeCoverageIgnore
+ */
 class DB extends DriverMappingAbstract
 {
     /**
@@ -371,23 +374,6 @@ class DB extends DriverMappingAbstract
         else
         {
             return 0;
-        }
-    }
-
-    /**
-     * Closes a previously opened database connection
-     * 
-     * @return bool
-     */
-    public function close()
-    {
-        if( ! empty($this->connect) )
-        {
-            @oci_close($this->connect);
-        }
-        else
-        {
-            return false;
         }
     }
 
