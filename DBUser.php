@@ -176,7 +176,7 @@ class DBUser extends Connection
      * 
      * @return DBUser
      */
-    public function option(String $name, String $value) : DBUser
+    public function option(String $name, String $value = NULL) : DBUser
     {
         $this->user->option($name, $value);
 
