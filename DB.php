@@ -701,8 +701,8 @@ class DB extends Connection
     {
         $start = (int) ($start ?? URI::segment(-1));
 
-        $this->limit = ' LIMIT '. ( ! empty($limit) ? $limit . ' OFFSET '.$start.' ' : $start );
-
+        $this->limit = $this->db->limit($start, $limit);
+        
         return $this;
     }
 
@@ -1554,7 +1554,7 @@ class DB extends Connection
             }
             else
             {
-                $values .= Base::suffix($value, ',');
+                $values .= Base::suffix($value, ','); 
             }
         }
 
@@ -1585,7 +1585,8 @@ class DB extends Connection
                         ' INTO '.
                         $this->_p($table).
                         $this->partition.
-                        $this->_values($data, $values);
+                        $this->_values($data, $values) . 
+                        $this->db->getInsertExtrasByDriver();
 
         $this->_resetInsertQuery();
 
@@ -1685,7 +1686,7 @@ class DB extends Connection
     {
         if( $total === true )
         {
-            return $this->query($this->_cleanLimit($this->stringQuery()))->totalRows();
+            return $this->query($this->db->cleanLimit($this->stringQuery()))->totalRows();
         }
 
         return $this->db->numRows();
@@ -1908,7 +1909,7 @@ class DB extends Connection
     public function pagination(String $url = NULL, Array $settings = [], Bool $output = true)
     {
         $pagcon   = Config::get('ViewObjects', 'pagination');
-        $getLimit = $this->_getLimitValues($this->stringQuery());
+        $getLimit = $this->db->getLimitValues($this->stringQuery());
         $start    = $getLimit['start'] ?? NULL;
         $limit    = $getLimit['limit'] ?? NULL;
 
@@ -2372,7 +2373,7 @@ class DB extends Connection
             }
             else
             {
-                $this->select .= ',' . $selectFunctions;
+                $this->select .= ',' . $selectFunctions; 
             }
         }
 
@@ -2412,7 +2413,7 @@ class DB extends Connection
 
             if( $cacheResult = $cache->driver($driver)->select($this->_cacheQuery()) )
             {
-                $this->results = $cacheResult;
+                $this->results = $cacheResult; 
             }
             else
             {
@@ -2449,7 +2450,7 @@ class DB extends Connection
 
                 if( $find = preg_grep('/(^id$)/i', array_keys($data)) )
                 {
-                    $current = current($find); unset($data[$current]);
+                    $current = current($find); unset($data[$current]); 
                 }
             }
         }
@@ -2475,32 +2476,6 @@ class DB extends Connection
     }
 
     /**
-     * Protected Clean Limit
-     * 
-     * @param string $data
-     * 
-     * @return array
-     */
-    protected function _cleanLimit($data)
-    {
-        return preg_replace('/limit\s+[0-9]+(\s*OFFSET\s*[0-9]+)*/xi', '', $data);
-    }
-
-    /**
-     * Protected Get Limit Values
-     * 
-     * @param string $data
-     * 
-     * @return array
-     */
-    protected function _getLimitValues($data)
-    {
-        preg_match('/limit\s+(?<limit>[0-9]+)(\s*OFFSET\s*(?<start>[0-9]+))*/xi', $data, $match);
-
-        return $match;
-    }
-
-    /**
      * Protected Delete Join Tables
      * 
      * @param string $table
@@ -2515,11 +2490,11 @@ class DB extends Connection
 
             if( $joinType === 'inner' )
             {
-                $joinTables = $this->_p($table).', '.$this->joinTable;
+                $joinTables = $this->_p($table).', '.$this->joinTable; 
             }
             elseif( $joinType === 'right' )
             {
-                $joinTables = $this->joinTable;
+                $joinTables = $this->joinTable; 
             }
             else
             {
