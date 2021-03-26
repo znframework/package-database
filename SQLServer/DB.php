@@ -415,7 +415,7 @@ class DB extends DriverMappingAbstract
      * 
      * @return DB
      */
-    public function limit($start = NULL, Int $limit = 0)
+    public function limit($start = NULL, int $limit = 0)
     {
         if( $limit === 0 )
         {

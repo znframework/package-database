@@ -138,7 +138,7 @@ class Connection
      * 
      * @return void
      */
-    public function __construct(Array $config = [])
+    public function __construct(array $config = [])
     {
         $this->defaultConfig = Config::default('ZN\Database\DatabaseDefaultConfiguration')
                                      ::get('Database', 'database');
@@ -223,7 +223,7 @@ class Connection
      * 
      * @return array
      */
-    public function vartypes() : Array
+    public function vartypes() : array
     {
         return $this->db->vartypes();
     }
@@ -235,7 +235,7 @@ class Connection
      * 
      * @return Connection
      */
-    public function table(String $table) : Connection
+    public function table(string $table) : Connection
     {
         $this->table       = ' '.$this->prefix.$table.' ';
         $this->tableName   = $this->prefix.$table;
@@ -252,7 +252,7 @@ class Connection
      * 
      * @return Connection
      */
-    public function column(String $col, $val = NULL) : Connection
+    public function column(string $col, $val = NULL) : Connection
     {
         $this->column[$col] = $val;
 
@@ -280,7 +280,7 @@ class Connection
      * 
      * @return string
      */
-    public function stringQuery() : String
+    public function stringQuery() : string
     {
         if( ! empty($this->stringQuery) )
         {
@@ -314,7 +314,7 @@ class Connection
      * 
      * @return Connection
      */
-    public function secure(Array $data) : Connection
+    public function secure(array $data) : Connection
     {
         $this->secure = $data;
 
