@@ -143,7 +143,7 @@ class Connection
         $this->defaultConfig = Config::default('ZN\Database\DatabaseDefaultConfiguration')
                                      ::get('Database', 'database');
         $this->config        = array_merge($this->defaultConfig, $config);
-        $this->db            = $this->_run();
+        $this->db            = $this->runDriver();
         $this->prefix        = $this->config['prefix'];
         Properties::$prefix  = $this->prefix;
 
@@ -334,7 +334,7 @@ class Connection
 
         array_shift($array);
 
-        $math  = $this->_math(isset($args[0]) ? strtoupper($args[0]) : false, $array);
+        $math  = $this->setMathFunction(isset($args[0]) ? strtoupper($args[0]) : false, $array);
 
         if( $math->return === true )
         {
@@ -392,7 +392,7 @@ class Connection
      * 
      * @return string
      */
-    protected function _escapeStringAddNail($value, $numeric = false)
+    protected function escapeStringAddNail($value, $numeric = false)
     {
         if( $numeric === true && is_numeric($value) )
         {
@@ -410,7 +410,7 @@ class Connection
      * 
      * @return string
      */
-    protected function _exp($column = '', $exp = 'exp')
+    protected function isExpressionExists($column = '', $exp = 'exp')
     {
         return stristr($column, $exp . ':');
     }
@@ -421,7 +421,7 @@ class Connection
      * 
      * @return string
      */
-    protected function _clearExp($column, $exp = 'exp')
+    protected function clearExpression($column, $exp = 'exp')
     {
         return str_ireplace($exp . ':', '', $column);
     }
@@ -433,7 +433,7 @@ class Connection
      * 
      * @return string
      */
-    protected function _clearNail($value)
+    protected function clearNail($value)
     {
         return trim($value, '\'');
     }
@@ -446,15 +446,15 @@ class Connection
      * 
      * @param void
      */
-    protected function _convertType(&$column = '', &$value = '')
+    protected function convertVartype(&$column = '', &$value = '')
     {
-        $clearValue = $this->_clearNail($value);
+        $clearValue = $this->clearNail($value);
 
-        if( $this->_exp($column, $type = 'int') )
+        if( $this->isExpressionExists($column, $type = 'int') )
         {
             $value = (int) $clearValue;
         }
-        elseif( $this->_exp($column, $type = 'float') )
+        elseif( $this->isExpressionExists($column, $type = 'float') )
         {
             $value = (float) $clearValue;
         }
@@ -463,7 +463,7 @@ class Connection
             $type = 'exp';
         }
 
-        $column = $this->_clearExp($column, $type);
+        $column = $this->clearExpression($column, $type);
     }
 
     /**
@@ -473,7 +473,7 @@ class Connection
      * 
      * @return string
      */
-    protected function _querySecurity($query)
+    protected function querySecurity($query)
     {
         if( ! empty($this->secure) )
         {
@@ -491,7 +491,7 @@ class Connection
                 {
                     $sec = $secure[$i] ?? NULL;
 
-                    $newstr .= $strex[$i].$this->_escapeStringAddNail($sec);
+                    $newstr .= $strex[$i].$this->escapeStringAddNail($sec);
                 }
 
                 $query = $newstr;
@@ -501,9 +501,9 @@ class Connection
             {
                 foreach( $this->secure as $k => $v )
                 {
-                    $this->_convertType($k, $v);
+                    $this->convertVartype($k, $v);
 
-                    $secureParams[$k] = $this->_escapeStringAddNail($v);
+                    $secureParams[$k] = $this->escapeStringAddNail($v);
                 }
             }
 
@@ -530,7 +530,7 @@ class Connection
      * 
      * @return object
      */
-    protected function _math($type, $args)
+    protected function setMathFunction($type, $args)
     {
         $type    = strtoupper($type);
         $getLast = Arrays\GetElement::last($args);
@@ -580,11 +580,11 @@ class Connection
      * 
      * @return object
      */
-    protected function _run($settings = [])
+    protected function runDriver($settings = [])
     {
         $this->driver = preg_replace('/(\w+)(\:\w+)*/', '$1', $this->config['driver']);
 
-        return $this->_drvlib(NULL, $settings);
+        return $this->getDriver(NULL, $settings);
     }
 
     /**
@@ -595,7 +595,7 @@ class Connection
      * 
      * @return object
      */
-    protected function _drvlib($suffix = NULL, $settings = [])
+    protected function getDriver($suffix = NULL, $settings = [])
     {
         Support::driver(array_keys($this->drivers), $this->driver);
 
@@ -624,7 +624,7 @@ class Connection
      * 
      * @return mixed
      */
-    protected function _runQuery($query, $type = 'query')
+    protected function runQuery($query, $type = 'query')
     {
         // @codeCoverageIgnoreStart
         if( $this->string === true )
@@ -649,7 +649,7 @@ class Connection
             return false;
         }
 
-        $this->db->$type($this->_querySecurity($query), $this->secure);
+        $this->db->$type($this->querySecurity($query), $this->secure);
 
         return ! (bool) $this->db->error();
     }
@@ -661,9 +661,9 @@ class Connection
      * 
      * @return string
      */
-    protected function _runExecQuery($query)
+    protected function runExecQuery($query)
     {
-        return $this->_runQuery($query, 'exec');
+        return $this->runQuery($query, 'exec');
     }
 
     /**
@@ -674,7 +674,7 @@ class Connection
      * 
      * @return string
      */
-    protected function _p($p = NULL, $name = 'table')
+    protected function addPrefixForTableAndColumn($p = NULL, $name = 'table')
     {
         if( $name === 'prefix' )
         {
