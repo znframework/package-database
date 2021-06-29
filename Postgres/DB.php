@@ -99,7 +99,7 @@ class DB extends DriverMappingAbstract
 
         if( ! empty($this->config['dsn']) )
         {
-            $dsn = $this->config['dsn'];
+            $dsn = $this->config['dsn']; // @codeCoverageIgnore
         }
 
         $connectMethod = $this->config['pconnect'] === true ? 'pg_pconnect' : 'pg_connect';
@@ -108,7 +108,7 @@ class DB extends DriverMappingAbstract
 
         if( empty($this->connect) )
         {
-            throw new ConnectionErrorException(NULL, 'connection');
+            throw new ConnectionErrorException(NULL, 'connection'); // @codeCoverageIgnore
         }
 
         if( ! empty($this->config['charset']) )
@@ -131,10 +131,21 @@ class DB extends DriverMappingAbstract
     {
         if( empty($query) )
         {
-            return false;
+            return false; // @codeCoverageIgnore
         }
 
-        return pg_query($this->connect, $query);
+        if( pg_send_query($this->connect, $query) ) 
+        {
+            if( $result = pg_get_result($this->connect) )
+            {
+                if( ! pg_result_error_field($result, PGSQL_DIAG_SQLSTATE) ) 
+                {
+                    return pg_query($this->connect, $query);
+                }
+            }  
+        }
+
+        return false;
     }
 
     /**
@@ -202,7 +213,7 @@ class DB extends DriverMappingAbstract
     {
         if( empty($this->query) )
         {
-            return false;
+            return false; // @codeCoverageIgnore
         }
 
         return pg_last_oid($this->query) ?: ($this->fetchArray()['id'] ?? NULL) ?: $this->fetchRow()[0] ?? false;
@@ -219,7 +230,7 @@ class DB extends DriverMappingAbstract
     {
         if( empty($this->query) )
         {
-            return false;
+            return false; // @codeCoverageIgnore
         }
 
         $columns   = [];
@@ -253,7 +264,7 @@ class DB extends DriverMappingAbstract
         }
         else
         {
-            return 0;
+            return 0; // @codeCoverageIgnore
         }
     }
 
@@ -266,7 +277,7 @@ class DB extends DriverMappingAbstract
     {
         if( empty($this->query) )
         {
-            return [];
+            return []; // @codeCoverageIgnore
         }
 
         $columns   = [];
@@ -293,7 +304,7 @@ class DB extends DriverMappingAbstract
         }
         else
         {
-            return 0;
+            return 0; // @codeCoverageIgnore
         }
     }
 
@@ -339,7 +350,7 @@ class DB extends DriverMappingAbstract
         }
         else
         {
-            return [];
+            return []; // @codeCoverageIgnore
         }
     }
 
@@ -356,7 +367,7 @@ class DB extends DriverMappingAbstract
         }
         else
         {
-            return [];
+            return []; // @codeCoverageIgnore
         }
     }
 
@@ -373,7 +384,7 @@ class DB extends DriverMappingAbstract
         }
         else
         {
-            return [];
+            return []; // @codeCoverageIgnore
         }
     }
 
@@ -390,7 +401,7 @@ class DB extends DriverMappingAbstract
         }
         else
         {
-            return 0;
+            return 0; // @codeCoverageIgnore
         }
     }
 
