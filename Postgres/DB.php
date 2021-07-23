@@ -194,6 +194,8 @@ class DB extends DriverMappingAbstract
      * Commit Transaction Query
      * 
      * @return bool
+     * 
+     * @codeCoverageIgnore
      */
     public function transCommit()
     {
@@ -204,19 +206,21 @@ class DB extends DriverMappingAbstract
      * Insert Last ID
      * 
      * @return int|string
+     * 
+     * @codeCoverageIgnore
      */
     public function insertID()
     {
         if( empty($this->query) )
         {
-            return false; // @codeCoverageIgnore
+            return false;
         }
 
-        $returningId = Properties::$returningId;
+        $returningId = Properties::$returningId; 
 
         Properties::$returningId = 'id';
 
-        return pg_last_oid($this->query) ?: ($this->fetchArray()[$returningId] ?? NULL) ?: $this->fetchRow()[0] ?? false;
+        return $returningId === '*' ? (object) $this->fetchAssoc() : ( $this->fetchAssoc()[$returningId] ?? false );
     }
 
     /**
@@ -258,14 +262,7 @@ class DB extends DriverMappingAbstract
      */
     public function numRows()
     {
-        if( ! empty($this->query) )
-        {
-            return pg_num_rows($this->query);
-        }
-        else
-        {
-            return 0; // @codeCoverageIgnore
-        }
+        return ! empty($this->query) ? pg_num_rows($this->query) : 0;
     }
 
     /**
@@ -298,14 +295,7 @@ class DB extends DriverMappingAbstract
      */
     public function numFields()
     {
-        if( ! empty($this->query) )
-        {
-            return pg_num_fields($this->query);
-        }
-        else
-        {
-            return 0; // @codeCoverageIgnore
-        }
+        return ! empty($this->query) ? pg_num_fields($this->query) : 0;
     }
 
     /**
@@ -327,14 +317,7 @@ class DB extends DriverMappingAbstract
      */
     public function error()
     {
-        if( is_resource($this->connect) )
-        {
-            return pg_last_error($this->connect) ?: false;
-        }
-        else
-        {
-            return false; // @codeCoverageIgnore
-        }
+        return is_resource($this->connect) ? ( pg_last_error($this->connect) ?: false ) : false;
     }
 
     /**
@@ -344,14 +327,7 @@ class DB extends DriverMappingAbstract
      */
     public function fetchArray()
     {
-        if( ! empty($this->query) )
-        {
-            return pg_fetch_array($this->query);
-        }
-        else
-        {
-            return []; // @codeCoverageIgnore
-        }
+        return ! empty($this->query) ? pg_fetch_array($this->query) : [];
     }
 
     /**
@@ -361,14 +337,7 @@ class DB extends DriverMappingAbstract
      */
     public function fetchAssoc()
     {
-        if( ! empty($this->query) )
-        {
-            return pg_fetch_assoc($this->query);
-        }
-        else
-        {
-            return []; // @codeCoverageIgnore
-        }
+        return ! empty($this->query) ? pg_fetch_assoc($this->query) : [];
     }
 
     /**
@@ -378,14 +347,7 @@ class DB extends DriverMappingAbstract
      */
     public function fetchRow()
     {
-        if( ! empty($this->query) )
-        {
-            return pg_fetch_row($this->query);
-        }
-        else
-        {
-            return []; // @codeCoverageIgnore
-        }
+        return ! empty($this->query) ? pg_fetch_row($this->query) : [];
     }
 
     /**
@@ -395,14 +357,7 @@ class DB extends DriverMappingAbstract
      */
     public function affectedRows()
     {
-        if( ! empty($this->query) )
-        {
-            return pg_affected_rows($this->query);
-        }
-        else
-        {
-            return 0; // @codeCoverageIgnore
-        }
+        return ! empty($this->query) ? pg_affected_rows($this->query) : 0;
     }
 
     /**
@@ -412,12 +367,7 @@ class DB extends DriverMappingAbstract
      */
     public function version()
     {
-        if( is_resource($this->connect) )
-        {
-            return pg_version($this->connect)['client'];
-        }
-
-        return false; // @codeCoverageIgnore
+        return is_resource($this->connect) ? pg_version($this->connect)['client'] : false;
     }
 
     /**
