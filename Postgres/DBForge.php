@@ -31,7 +31,7 @@ class DBForge extends DriverForge
      */
     public function modifyColumn($table, $column)
     {
-        $col = key($column); $values = (array) current($column); $query = NULL;
+        $col = key($column); $values = (array) current($column); $query = '';
         
         foreach( $values as $value )
         {
@@ -42,6 +42,7 @@ class DBForge extends DriverForge
 
         return $query;
     }
+
 
     /**
      * Rename Column

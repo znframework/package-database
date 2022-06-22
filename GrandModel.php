@@ -177,10 +177,12 @@ class GrandModel
      * @param void
      * 
      * @return int
+     * 
+     * @codeCoverageIgnore
      */
     public function hashId()
     {
-        return $this->connect->hashId();
+        return $this->connect->hashId(); 
     }
 
     /**
@@ -616,7 +618,6 @@ class GrandModel
     {
         $func = $type;
         $col  = substr($method, strlen($type));
-        $data = NULL;
 
         if( $func === 'update' )
         {
